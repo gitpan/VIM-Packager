@@ -7,16 +7,16 @@ dependency:
         target: autoload/libperl.vim
   - name: search-window.vim
     required_files:
-      - from: http://github.com/c9s/search-window.vim/raw/master/vimlib/plugin/window.vim
-        target: plugin/window.vim
+      - from: http://github.com/c9s/search-window.vim/raw/master/vimlib/autoload/swindow.vim
+        target: autoload/swindow.vim
 name: cpan.vim
 repository: http://github.com/c9s/cpan.vim
 script:
-  - bin/vim-packager
-  - bin/vim-packager-2
-  - bin/vim-packager-3
+  - utils/perl_function_list.pl
+  - utils/parse_moose_accessor.pl
+  - utils/moose-type-constraints
 type: plugin
-version: 3.0
+version: 1.0
 vim_version:
   op: '>='
   version: 7.0

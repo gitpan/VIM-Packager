@@ -50,21 +50,37 @@ sub read {
     my $fh = shift;
 
     my @lines = <$fh>;
-    for ( my  $idx = 0 ; $_ = $lines[ $idx ] and $idx < @lines ; $idx ++ ) {
-        next if /^#/;    # skip comment
-        s/#.*$//;
-        s/\s*$//;
 
-        if ( /^=(\w+)/ ) {
-            my $dispatch = '__' . $1;
-            if( $class->can( $dispatch ) )  {
-                $class->$dispatch( $_ , \@lines , $idx );
-            }
-            else {
-                print "meta tag $1 is not supported.\n";
-            }
+    my $cur_section;
+    my %sections = ();
+    for ( @lines ) {
+        chomp;
+        $_ = trim_comment($_);
+        $_ = trim( $_ );
+        next if blank($_);
+
+        if( /^=(\w+)(?:\s+(.*?))?$/ ) {
+            $cur_section = $1;
+            $sections{ $cur_section} = $2 if $2;
+            next;
         }
+
+        push @{ $sections{ $cur_section } } , $_;
     }
+
+
+    for my $sec ( keys %sections ) {
+        my $lines = $sections{ $sec };
+        my $dispatch = '__' . $sec;
+        if( $class->can( $dispatch ) )  {
+            $class->$dispatch( $lines );
+        }
+        else {
+            print "meta tag $1 is not supported.\n";
+        }
+
+    }
+=pod
 
     # check for mandatory meta info
     my $fall;
@@ -76,8 +92,28 @@ sub read {
         }
     }
     die if $fall;
+=cut
 
+}
 
+my $package_re = '[0-9a-zA-Z._-]+';
+
+sub trim_comment {
+    my $c = shift;
+    $c =~ s/#.*$//; # skip comment
+    return $c;
+}
+
+sub trim {
+    my $c = shift;
+    $c =~ s/^\s*//;
+    $c =~ s/\s*$//;
+    return $c;
+}
+
+sub blank {
+    my $c = shift;
+    return $c =~ /^\s*$/;
 }
 
 
@@ -88,23 +124,30 @@ sub _get_value {
 }
 
 sub __name {
-    my ($self,$cur,$lines,$idx) = @_;
-    $self->meta->{name} = _get_value( $cur );
+    my ($self,$value) = @_;
+    $self->meta->{name} =$value;
 }
 
 sub __author {
-    my ($self,$cur,$lines,$idx) = @_;
-    $self->meta->{author} = _get_value( $cur );
+    my ($self,$value) = @_;
+    $self->meta->{author} =$value;
 }
 
 sub __version {
-    my ( $self, $cur, $lines, $idx ) = @_;
-    $self->meta->{version} = _get_value($cur);
+    my ($self,$value) = @_;
+    $self->meta->{version} = $value;
+}
+
+sub __type {
+    my ($self,$value) = @_;
+    $self->meta->{type} =$value;
 }
 
 sub __version_from {
-    my ($self,$cur,$lines,$idx) = @_;
-    my $version_file = _get_value( $cur );
+    my ($self,$version_file) = @_;
+
+    $self->meta->{version_from} = $version_file;
+
     open FH, "<" , $version_file;
     my @lines = <FH>;
     close FH;
@@ -123,121 +166,64 @@ sub __version_from {
     print " \"=VERSION 0.3 \n";
 }
 
-sub __type {
-    my ($self,$cur,$lines,$idx) = @_;
-    $self->meta->{type} = _get_value( $cur );
-}
-
-
-my $package_re = '[0-9a-zA-Z._-]+';
-
-
-
-sub trim_comment {
-    my $c = shift;
-    $c =~ /^#/; # skip comment
-    return $c;
-}
-
-sub trim {
-    my $c = shift;
-    $c =~ s/^\s*//;
-    $c =~ s/\s*$//;
-    return $c;
-}
-
-sub blank {
-    my $c = shift;
-    return $c =~ /^\s*$/;
-}
 
 sub __dependency {
-    my ( $self, $cur, $lines, $idx ) = @_;
+    my ( $self, $lines ) = @_;
     $self->meta->{dependency} = [];
 
-PKG:
-    for( $idx++ ; $idx < @$lines ; $idx ++ ) {
-        my $cn = $lines->[ $idx + 1 ];
-        last PKG if $cn =~ /^=/;
-
-        my $c = trim( $lines->[ $idx ] );
-        trim_comment( $c );
-        next if blank( $c );
+    my %pkgs = ();
+    my $cur_name;
+    for ( @$lines ) {
 
         # for lines like:
         #       plugin.vim  > 1.0
-        if( my ( $name , $op , $version ) = ( $c =~ m{
-                    ^
-                    ($package_re)
-                    \s+
-                    ([=<>]{1,2})\s+
-                    ([0-9a-z.-]+) }x ) )
-        {
-            push @{ $self->meta->{dependency} }, {
+        warn $_;
+        if( m{^ ($package_re) \s+ ([=<>]{1,2}) \s+ ([0-9.]+) }x ) {
+            my ( $name, $op, $version ) = ( $1, $2, $3 );
+            $pkgs{ $name } = {
                 name => $name,
                 op => $op,
                 version => $version,
             };
-        } 
+            next;
+        }
 
         # for lines like:
         #       plugin.vim
         #           | plugin/plugin.vim | http://...../.../plugin.vim
-        #
-        elsif( my ($pkgname) = ( $c =~ m{^($package_re)$} ) ) {
-            my @files_to_retrieve = ();
-            $idx++;
-DEP:
-            for( ; $idx < @$lines ; $idx++ )  {
-
-                my $c = trim($lines->[ $idx ]);
-                trim_comment( $c );
-
-                next DEP if blank( $c );
-
-                if( my ($target,$from) = $c =~ m{^\|\s*(.*?)\s*\|\s*(.*)$} ) {
-                    push @files_to_retrieve, { from => $from , target => $target };
-                }
-
-                my $cn = $lines->[ $idx + 1 ];
-                last DEP if $cn =~ /^=/;
-                last DEP if $cn !~ /^\|/;
-
-            }
-            push @{ $self->meta->{dependency} }, {
-                name => $pkgname,
-                required_files => \@files_to_retrieve ,
-            };
+        elsif( m{^($package_re)$} ) {
+            $cur_name = $1;
+            $pkgs{ $cur_name } = [];
+            next;
         }
+        elsif( m{^\|\s*(.*?)\s*\|\s*(\S+)} ) {
+            my ( $target, $from ) = ( $1, $2 );
+            push @{ $pkgs{ $cur_name } } , {  from => $from , target => $target  };
+        }
+        
+
     }
+
+    $self->meta->{dependency} = [
+        map( { { name => $_, required_files => $pkgs{$_} } } grep { ref( $pkgs{$_} ) eq 'ARRAY' } keys %pkgs ),
+        map( { $pkgs{$_} } grep { ref( $pkgs{$_} ) ne 'ARRAY' } keys %pkgs ),
+    ];
 }
 
 
 sub __script {
-    my ($self,$cur,$lines,$idx) = @_;
-    for( $idx++ ; $idx < @$lines ; $idx ++ ) {
-
-        my $c = trim( $lines->[ $idx ] );
-        return if $c =~ /^=/;
-        next if blank( $c ) ;
-
-        push @{ $self->meta->{script} },  $c;
-
-        my $cn = $lines->[ $idx + 1 ];
-        return if $cn =~ /^=/;
-    }
+    my ( $self, $lines ) = @_;
+    $self->meta->{script} = $lines;
 }
 
 sub __repository {
-    my ($self,$cur,$lines,$idx) = @_;
-    $self->meta->{repository} = _get_value( $cur );
+    my ( $self, $value ) = @_;
+    $self->meta->{repository} = $value;
 }
 
 sub __vim_version {
-    my ($self,$cur,$lines,$idx) = @_;
-    my $v = _get_value( $cur );
+    my ( $self , $v ) = @_;
     my ( $op , $version ) = $v =~ m/^([<=>]{1,2})\s+([0-9.-a-z]+)/;
-
     $self->meta->{vim_version} = {
         op => $op,
         version => $version,

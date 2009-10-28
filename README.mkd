@@ -3,7 +3,7 @@ VIM::Packager ABSTRACT
 
 to create a new plugin:
 
-    $ vim-packager create --name=new_plugin --type plugin --author=Cornelius --email=cornelius.howl@DELETE-ME.gmail.com
+    $ vimpkg create --name=new_plugin --type plugin --author=Cornelius --email=cornelius.howl@DELETE-ME.gmail.com
 
     new_plugin/
     new_plugin/vimlib/plugin/
@@ -13,22 +13,31 @@ to create a new plugin:
 fill your 'META' file
 
     =name       new_plugin
+
     =author     Cornelius (cornelius.howl@gmail.com)
+
     =version    0.1
+
     =version    plugin/new_plugin.vim   # extract version infomation from this file
+
     =type       syntax
+
     =vim_version >= 7.0
+
     =dependency
+
         autocomplpop.vim > 0.3
         rainbow.vim      >= 1.2
 
     =script
+
         bin/parser
         bin/template_generator
 
     =repository git://....../
 
-    $ vim-package manifest
+
+    $ vimpkg manifest
 
             vimlib/syntax/aaa.vim
             vimlib/plugin/aaa.vim
@@ -36,13 +45,13 @@ fill your 'META' file
 
 then update your 'MANIFEST' file
 
-    $ vim-package build
+    $ vimpkg build
 
-    $ vim-package dist
+    $ vimpkg dist
 
     new_plugin-0.1.tar.gz  # is out
 
-    $ vim-package upload new_plugin-0.1.tar.gz
+    $ vimpkg upload new_plugin-0.1.tar.gz
 
     Uploading...Done
 
@@ -54,7 +63,7 @@ you can also define your '.IGNORE' file
 VIM::Packager PACKAGE INSTALLATION
 ==================================
 
-    $ vim-packager build
+    $ vimpkg build
 
 the build action, which reads 'META' file , and convert meta information into META.yml
     or read 'META.yml' file
@@ -78,7 +87,7 @@ FOR AN EXISTED VIM DISTRIBUTION
         doc/
         README
 
-    $ vim-packager init
+    $ vimpkg init
 
 which generates
 
@@ -94,7 +103,7 @@ dependency (user should define it by self)
 
 your should update your package information from META file
 
-    $ vim-packager build 
+    $ vimpkg build 
 
     $ make install
 
@@ -121,7 +130,7 @@ BASIC REQUIREMENT
     "
     "=LICENSE MIT
     "
-    "=REPOSITORY http://github.com/c9s/p5-vim-packager
+    "=REPOSITORY http://github.com/c9s/p5-vimpkg
     "
     "=REVISION r4356
     "
@@ -202,16 +211,16 @@ perldoc command.
 You can also look for information at:
 
     RT, CPAN's request tracker
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=VIM-Packager
+        http://rt.cpan.org/NoAuth/Bugs.html?Dist=vimpkg
 
     AnnoCPAN, Annotated CPAN documentation
-        http://annocpan.org/dist/VIM-Packager
+        http://annocpan.org/dist/vimpkg
 
     CPAN Ratings
-        http://cpanratings.perl.org/d/VIM-Packager
+        http://cpanratings.perl.org/d/vimpkg
 
     Search CPAN
-        http://search.cpan.org/dist/VIM-Packager/
+        http://search.cpan.org/dist/vimpkg/
 
 
 COPYRIGHT AND LICENCE
