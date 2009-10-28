@@ -19,10 +19,12 @@ requires(
     'LWP::Simple'                 => 0,
     'YAML'                        => 0.70,
 );
-    
+
+recommends 'VIM::Uploader' => '0';
+
 build_requires 'Test::More';
 
-install_script 'bin/vimpkg';
+install_script 'bin/vim-packager';
 auto_install;
 
 WriteAll;

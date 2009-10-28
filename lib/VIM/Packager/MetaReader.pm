@@ -45,7 +45,7 @@ sub get_meta_file {
 =cut
 
 sub read {
-    my $class = shift;
+    my $self = shift;
 
     my $fh = shift;
 
@@ -72,11 +72,12 @@ sub read {
     for my $sec ( keys %sections ) {
         my $lines = $sections{ $sec };
         my $dispatch = '__' . $sec;
-        if( $class->can( $dispatch ) )  {
-            $class->$dispatch( $lines );
+        if( $self->can( $dispatch ) )  {
+            $self->$dispatch( $lines );
         }
         else {
-            print "meta tag $1 is not supported.\n";
+            print "meta tag $sec is not supported. but we will still save to Makefile\n";
+            $self->{meta}->{ $sec } = $lines;
         }
 
     }
@@ -177,7 +178,6 @@ sub __dependency {
 
         # for lines like:
         #       plugin.vim  > 1.0
-        warn $_;
         if( m{^ ($package_re) \s+ ([=<>]{1,2}) \s+ ([0-9.]+) }x ) {
             my ( $name, $op, $version ) = ( $1, $2, $3 );
             $pkgs{ $name } = {

@@ -97,6 +97,7 @@ sub new {
 
     my $filelist = $self->make_filelist();
 
+    my @meta_section   = $self->meta_section( $meta );
     my @config_section = $self->config_section();
     my @file_section   = $self->file_section( $filelist );
 
@@ -111,9 +112,9 @@ sub new {
 
     new_section \@main => "pure_install";
 
-    add_st \@main => q|$(NOECHO) $(FULLPERL) -Ilib -MVIM::Packager::Installer=install|
+    add_st \@main => q|$(NOECHO) $(FULLPERL) $(PERLFLAGS) -MVIM::Packager::Installer=install|
                  . q| -e 'install()' $(VIMS_TO_RUNT) |;
-    add_st \@main => q|$(NOECHO) $(FULLPERL) -Ilib -MVIM::Packager::Installer=install|
+    add_st \@main => q|$(NOECHO) $(FULLPERL) $(PERLFLAGS) -MVIM::Packager::Installer=install|
                  . q| -e 'install()' $(BIN_TO_RUNT) |;
     add_st \@main => q|$(NOECHO) $(TOUCH) pure_install|;
 
@@ -129,8 +130,8 @@ sub new {
         my @nonversion_params = map {  ( $_->{target} , $_->{from} ) } 
             map { @{ $unsatisfied{ $_ } } } $pkgname ;
 
-        add_st \@main => multi_line q|$(NOECHO) $(FULLPERL) |
-                    . qq| -Ilib -MVIM::Packager::Installer=install_deps_remote |
+        add_st \@main => multi_line q|$(NOECHO) $(FULLPERL) $(PERLFLAGS)|
+                    . qq| -MVIM::Packager::Installer=install_deps_remote |
                     . qq| -e 'install_deps_remote()' $pkgname | 
                     , @nonversion_params ;
 
@@ -138,7 +139,7 @@ sub new {
 
     my @pkgs_version = grep {  ref($unsatisfied{$_}) ne 'ARRAY' } sort keys %unsatisfied;
     if( @pkgs_version > 0 ) {
-        add_st \@main => q|$(NOECHO) $(FULLPERL) -Ilib -MVIM::Packager::Installer=install_deps  |
+        add_st \@main => q|$(NOECHO) $(FULLPERL) $(PERLFLAGS) -MVIM::Packager::Installer=install_deps  |
                 . qq| -e 'install_deps()' '@{[ join ",",@pkgs_version ]}' |;
     }
     add_st \@main , q|$(NOECHO) $(TOUCH) install-deps|; # XXX: cur base path
@@ -148,9 +149,18 @@ sub new {
         add_st \@main => q|$(NOECHO) $(LN_S) | . File::Spec->join( '$(PWD)' , $src ) .  $target;
     }
 
-    new_section \@main => 'dist';
-	add_noop_st \@main;
+    new_section \@main => 'link-force';
+    while( my ($src,$target) = each %$filelist ) {
+        add_st \@main => q|$(NOECHO) $(LN_SF) | . File::Spec->join( '$(PWD)' , $src ) .  $target;
+    }
 
+    new_section \@main => 'manifest';
+    add_st \@main => q|$(FULLPERL) $(PERLFLAGS) -MVIM::Packager::Manifest=mkmanifest -e 'mkmanifest'|;
+    add_st \@main => q|$(NOECHO) $(TOUCH) MANIFEST.SKIP|;
+
+    new_section \@main => 'dist';
+    add_st \@main => q|$(TAR) $(TARFLAGS) $(DISTNAME).tar.gz $(TO_INST_VIMS)|;
+	add_noop_st \@main;
 
     new_section \@main => 'help';
     add_st \@main => q|perldoc VIM::Packager|;
@@ -162,17 +172,31 @@ sub new {
 
     # XXX: prompt user to uninstall depedencies
 
-
-    new_section \@main => 'upload';
-	add_noop_st \@main;
-
-
+    new_section \@main => 'upload' , qw(dist);
+    add_st \@main => q|$(FULLPERL) $(PERLFLAGS) -MVIM::Packager::Uploader=upload -e 'upload()' |
+                . multi_line qw|$(PWD)/$(DISTNAME).tar.gz $(VIM_VERSION) $(VERSION) $(SCRIPT_ID)|;
 
     new_section \@main => 'clean';
     add_st \@main      => multi_line q|$(RM)|,
             qw(pure_install install-deps);
+    add_st \@main => q|$(MV) $(FIRST_MAKEFILE) $(MAKEFILE_OLD)|;
 
-    print STDOUT "Write to Makefile.\n";
+
+    $self->generate_makefile( [
+            { meta   => \@meta_section },
+            { config => \@config_section },
+            { file   => \@file_section },
+            { main   => \@main } ] );
+}
+
+
+sub generate_makefile {
+    my $self = shift;
+    my $sections = shift;
+    
+
+    print "Write to Makefile.\n";
+
     open my $fh , ">" , 'Makefile';
     print $fh <<'END';
 # VIM::Packager::MakeMaker
@@ -185,15 +209,39 @@ sub new {
 # 
 
 END
-    print $fh "\n\n# -------- config section ------\n";
-    print $fh join("\n", @config_section);
-    print $fh "\n\n# -------- file section ------\n";
-    print $fh join("\n", @file_section);
-    print $fh "\n\n# -------- main section ------\n";
-    print $fh join("\n", @main );
+    for my $s ( @$sections ) {
+        my $n = (keys %$s)[0];
+        my $list = $s->{$n};
+        print $fh "\n";
+        print $fh "\n";
+        print $fh "\n";
+        print $fh sprintf("# -------- %s section ------\n" , $n );
+        print $fh join("\n", @$list );
+        print $fh "\n";
+        print $fh "\n";
+    }
     close $fh;
+    print "DONE\n";
+
 }
 
+
+sub meta_section {
+    my $self = shift;
+    my $meta = shift;
+    my @section = ();
+    map { add_macro \@section, uc($_) => $meta->{$_} } grep { ! ref $meta->{$_} } keys %$meta;
+
+    my $distname  = $meta->{name};
+    $distname =~ tr/._/--/;
+    $distname .= '-' . $meta->{version};
+    add_macro \@section , DISTNAME => $distname;
+
+    # XXX: op skipeed
+    add_macro \@section , VIM_VERSION => $meta->{vim_version}->{version};
+
+    return @section;
+}
 
 sub config_section {
     my $self = shift;
@@ -222,10 +270,16 @@ sub config_section {
     $configs{TRUE}     ||= 'true';
     $configs{NOOP}     ||= '$(TRUE)';
     $configs{LN_S}     ||= 'ln -sv';
+    $configs{LN_SF}     ||= 'ln -svf';
     $configs{PWD}      ||= '`pwd`';
 
-    $configs{TAR} ||= 'TAR = COPY_EXTENDED_ATTRIBUTES_DISABLE=1 COPYFILE_DISABLE=1 tar';
-    $configs{TARFLAGS} ||= 'cvf';
+    $configs{FIRST_MAKEFILE} ||= 'Makefile';
+    $configs{MAKEFILE_OLD}   ||= 'Makefile.old';
+
+    $configs{TAR} ||= 'COPY_EXTENDED_ATTRIBUTES_DISABLE=1 COPYFILE_DISABLE=1 tar';
+    $configs{TARFLAGS} ||= 'cvzf';
+
+    $configs{PERLFLAGS} ||= ' -Ilib ';
 
     map { add_macro \@section, $_ => $configs{$_} } sort keys %configs;
     map { add_macro \@section, $_ => $dir_configs{$_} } sort keys %dir_configs;
@@ -419,6 +473,10 @@ sub full_setup {
     );
 }
 
+
+# XXX:
+# parse version from vim runtime path files
+# neeed to find a way to do it
 sub parse_version {
 
 }
