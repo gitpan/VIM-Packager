@@ -16,11 +16,18 @@ requires(
     'File::Path'                  => 2.07,
     'File::Spec'                  => 3.3,
     'Getopt::Long'                => 2.38,
-    'LWP::Simple'                 => 0,
+    'LWP::UserAgent'                 => 0,
     'YAML'                        => 0.70,
 );
 
-recommends 'VIM::Uploader' => '0';
+feature 'Upload vim script dist to vim.org' =>
+    -default => 1,
+    recommends('VIM::Uploader' => '0');
+
+feature 'Diff with remote download script' => 
+    -default => 1,
+    recommends('Algorithm::Diff' => '0');
+
 
 build_requires 'Test::More';
 

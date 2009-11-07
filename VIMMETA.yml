@@ -15,7 +15,7 @@ script:
   - utils/perl_function_list.pl
   - utils/parse_moose_accessor.pl
   - utils/moose-type-constraints
-script_id: 2524
+script_id: 2523
 type: plugin
 version: 1.0
 version_from: vimlib/plugin/cpan.vim

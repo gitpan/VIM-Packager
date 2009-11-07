@@ -11,11 +11,11 @@ VIM::Packager ABSTRACT
 
 ### To install a vim package
 
-first thing, we need translate meta file (VIMMETA) into Makefile. just type:
+first thing, we need to translate meta file (VIMMETA) into Makefile. just type:
 
     $ vim-packager build
 
-this will detect dependencies of this vim script package and generate Makefile for you.
+this will detect dependencies of the vim package and generate Makefile for you.
 
 to install dependencies:
 
@@ -46,7 +46,7 @@ for some reason , you want the scripts be linked to your vim runtime path.
 
 ### To upload to vim.org
 
-you need to specify script\_id in your meta file ( VIMMETA ).
+you need to specify script\_id in your meta file ( VIMMETA or META ).
 
 then run vim-packager build to get your Makefile. then type command below to
 upload your distribution:
@@ -93,7 +93,7 @@ to create package tarball file:
     new_plugin/
     new_plugin/vimlib/plugin/
     new_plugin/vimlib/doc/
-    new_plugin/vimlib/META
+    new_plugin/vimlib/VIMMETA
 
 fill your 'VIMMETA' file
 
@@ -119,7 +119,7 @@ fill your 'VIMMETA' file
         # this will be detected when you run 'vim-packager build'
         # and depdencies will be installed when you type 'make'
 
-        autocomplpop.vim
+        somewhat.vim
             | autoload/acp.vim | [url]
             | plugin/acp.vim   | [url2]
 
@@ -158,7 +158,7 @@ to create your distribution
 
     new_plugin-0.1.tar.gz  # is out
 
-    $ make upload new_plugin-0.1.tar.gz  # XXX: not implement yet
+    $ make upload
 
     Uploading...Done
 
@@ -166,6 +166,12 @@ you can also define your 'MANIFEST.SKIP' file
 
         .git\*
         test-
+
+### To create a pure Makefile that doesn't depend on VIM::Packager module
+
+    $ vim-packager build --pure
+
+
 
 FOR AN EXISTED VIM DISTRIBUTION
 ===============================
@@ -180,21 +186,24 @@ FOR AN EXISTED VIM DISTRIBUTION
         doc/
         README
 
-    $ vim-packager init
+    $ vim-packager init \
+        --name=your_plugin \
+        --author=your_name \
+        --email=your@email.com \
+        --type=plugin
+
+        # --type is optional
 
 which generates
 
-        META
+        VIMMETA
         MANIFEST
         .IGNORE
-        vimlib/
+        vimlib/....
 
-name from parent directory name
-version (should try to parse \*.vim files)
-author  (should try to parse \*.vim files)
-dependency (user should define it by self)
+and mv your vim directories into vimlib/ , if you dont want this then specify `--no-migration`
 
-your should update your package information from META file
+your should update your package information in VIMMETA file
 
     $ vim-packager build 
 
