@@ -60,15 +60,13 @@ sub add_noop_st {
 	add_st $_[0] => q|$(NOECHO) $(NOOP)|;
 }
 
-
-
-
 sub new { 
     my $class = shift;
     my $cmd = shift;  # command object
 
     my $self = bless {}, $class;
     my $meta = VIM::Packager::MetaReader->new->read_metafile();
+
 
     $self->{cmd} = $cmd;
 
@@ -247,11 +245,6 @@ sub section_link {
     new_section $main => 'link-force';
     while( my ($src,$target) = each %$filelist ) {
         add_st $main => q|$(NOECHO) $(LN_SF) | . File::Spec->join( '$(PWD)' , $src ) . " " .  $target;
-    }
-
-    new_section $main => 'unlink';
-    while( my ($src,$target) = each %$filelist ) {
-        add_st $main => q|$(NOECHO) $(RM) | . $target;
     }
 }
 

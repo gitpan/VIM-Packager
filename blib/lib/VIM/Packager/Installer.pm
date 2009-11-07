@@ -141,7 +141,7 @@ sub prompt_for_different {
     print "Installed script version not found. instead , we found the installed script file.\n";
     print "The installed vim script file is different from which you just downloaded.\n";
     print "Which is: $target.\n";
-    print "(Replace(r) / Diff(d) / Merge(m) / Skip(s) ) it with the remote one ? ";
+    print "(Replace / Diff / Merge / Skip) it with the remote one ? (r/d/m/s) ";
     my $ans = <STDIN>;
     chomp $ans;
     return $ans;
@@ -191,21 +191,15 @@ sub install {
 
         File::Path::mkpath [ $dir ] unless -e $dir ;
 
-        if( -e $to ) {
-            my $mtime_to = (stat($to))[9];
-            my $mtime_from = (stat($from))[9];
+        my $mtime_to = (stat($to))[9];
+        my $mtime_from = (stat($from))[9];
 
-            if ( $mtime_from > $mtime_to ) {
-                File::Copy::copy( $from , $to );
-                print STDOUT "Installing $from => $to \n";
-            }
-            else {
-                print STDOUT "Skip $from\n";
-            }
-        }
-        else {
+        if ( $mtime_from > $mtime_to ) {
             File::Copy::copy( $from , $to );
             print STDOUT "Installing $from => $to \n";
+        }
+        else {
+            print STDOUT "Skip $from\n";
         }
     }
 
@@ -216,6 +210,7 @@ sub install {
     my $record_path = $ENV{VIMPKG_RECORDDIR} || File::Spec->join($ENV{HOME},'.vim','record');
 
     mkdir $record_path unless $record_path;
+
     YAML::DumpFile( File::Spec->join( $record_path ,
         $meta->{name} 
       ) , { 
@@ -223,7 +218,7 @@ sub install {
         files => $files 
     } );
 
-    # XXX: update doc tags here
+    # XXX: update doc tags
 }
 
 1;

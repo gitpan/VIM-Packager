@@ -1,0 +1,33 @@
+{
+   "resources" : {
+      "repository" : "http://github.com/c9s/vim-packager"
+   },
+   "generated_by" : "Dist::Zilla version 1.093000",
+   "meta-spec" : {
+      "version" : 1.4,
+      "url" : "http://module-build.sourceforge.net/META-spec-v1.4.html"
+   },
+   "version" : "1.093110",
+   "name" : "VIM-Packager",
+   "author" : [
+      "Cornelius <cornelius.howl@gmail.com>"
+   ],
+   "license" : "perl",
+   "requires" : {
+      "File::Copy" : "0",
+      "Getopt::Long" : "2.38",
+      "YAML" : "0.70",
+      "DateTime::Format::DateParse" : "0.04",
+      "Exporter::Lite" : "0.02",
+      "File::Spec" : "3.3",
+      "App::CLI" : "0.08",
+      "Carp" : "1.11",
+      "VIM::Uploader" : "0",
+      "LWP::UserAgent" : "0",
+      "File::Find" : "1.14",
+      "File::Path" : "2.07",
+      "File::Basename" : "0",
+      "Algorithm::Diff" : "0"
+   },
+   "abstract" : "Vim Packager builder / installer"
+}
