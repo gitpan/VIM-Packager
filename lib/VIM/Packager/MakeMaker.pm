@@ -13,10 +13,6 @@ use File::Find;
 our $VERSION = 0.0.1;
 my  $VERBOSE = 1;
 
-use constant {
-    LIBPATH  => 'vimlib',
-};
-
 =head1 SYNOPSIS
 
     $ vim-packager build 
@@ -24,8 +20,31 @@ use constant {
         # auto install dependency 
     $ make install
 
+=head1 Constants
+
+LIBPATH: F<vimlib/>
+
 =cut
 
+use constant {
+    LIBPATH  => 'vimlib',
+};
+
+=head1 Makefile Helper Functions
+
+=head2 multi_line Array:Lines
+
+=head2 add_macro  ArrayRef:Makefile Lines , String: Macro Name , String: Macro 
+
+=head2 new_section ArrayRef:Makefile Lines , String: Section Name , Array: Depended macro names
+
+=head2 add_st ArrayRef:Makefile Lines , String: Statement , Array: Statement Arguments
+
+Statement Arguments is for Statement string, which is in sprintf format.
+
+=head2 add_noop_st ArrayRef:Makefile Lines
+
+=cut
 
 sub multi_line {
     my @items = @_;
@@ -45,23 +64,19 @@ sub new_section {
 }
 
 sub add_st {
-    my $ref = shift;
-    my $st = shift;
-    push @{ $ref } , qq|\t\t| . $st;
-}
-
-sub meta {
-    my $self = shift;
-    $self->{meta} = shift if @_;
-    return $self->{meta};
+    my ($ref, $st , @args ) = @_;
+    push @{ $ref } , qq|\t\t| . sprintf($st , @args);
 }
 
 sub add_noop_st {
 	add_st $_[0] => q|$(NOECHO) $(NOOP)|;
 }
 
+=head1 Main Functions
 
+=head2 new
 
+=cut
 
 sub new { 
     my $class = shift;
@@ -158,8 +173,27 @@ sub new {
             { main   => $main } ] );
 }
 
+=head2 meta
+
+return current meta object.
+
+=cut
+
+sub meta {
+    my $self = shift;
+    $self->{meta} = shift if @_;
+    return $self->{meta};
+}
 
 
+
+
+
+=head2 section_all
+
+
+
+=cut
 
 sub section_all {
     my $self = shift;
@@ -168,12 +202,24 @@ sub section_all {
 	add_noop_st $main;
 }
 
+=head2 section_install
+
+
+
+=cut
+
 sub section_install {
     my $self = shift;
     my $main = shift;
     new_section $main => "install" => qw(pure_install install-deps) ;
 	add_noop_st $main;
 }
+
+=head2 section_pure_install
+
+
+
+=cut
 
 sub section_pure_install {
     my ($self,$main,$makefile) = @_;
@@ -202,6 +248,12 @@ sub section_pure_install {
             . q| -e 'install()' $(BIN_TO_RUNT) |;
     }
 }
+
+=head2 section_deps
+
+
+
+=cut
 
 sub section_deps {
     my $self = shift;
@@ -237,6 +289,10 @@ sub section_deps {
     }
 }
 
+=head2 section_link
+
+
+=cut
 
 sub section_link {
     my ($self,$main , $filelist) = @_;

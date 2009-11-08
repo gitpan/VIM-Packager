@@ -1,3 +1,0 @@
-
-rename 'test' , 'vimlib/test';
-

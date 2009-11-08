@@ -1,3 +1,5 @@
+# XXX: move this into pod , and extract readme.mkd from .pm file.
+
 INSTALLATION
 ============
 

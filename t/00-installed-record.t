@@ -24,9 +24,12 @@ close FH;
 
 @pkg_record = VIM::Packager::MakeMaker->get_installed_pkgs( $recdir );
 
-is_deeply( \@pkg_record , [
+my @files = (
           '/tmp/vimpackager-test/aaa',
           '/tmp/vimpackager-test/bbb'
-        ]);
+      );
+@pkg_record = [ sort @pkg_record ];
+@files      = [ sort @files ];
+is_deeply( \@pkg_record , \@files );
 
 rmtree [ $recdir ];

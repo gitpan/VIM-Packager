@@ -104,11 +104,35 @@ sub create_doc_skeleton {
 $name                                       *$name* 
 Last Change: @{[ DateTime->now ]}
 
+Version 0.0.0
+Copyright (C) yourname
+License: MIT license  {{{
+    Permission is hereby granted, free of charge, to any person obtaining
+    a copy of this software and associated documentation files (the
+    "Software"), to deal in the Software without restriction, including
+    without limitation the rights to use, copy, modify, merge, publish,
+    distribute, sublicense, and/or sell copies of the Software, and to
+    permit persons to whom the Software is furnished to do so, subject to
+    the following conditions:
+
+    The above copyright notice and this permission notice shall be included
+    in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+    OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEME and associated documentation files (the
+    "Software"), to deal in the Software without restriction, including
+    without limitation the rights to use, copy, modify, merge, publish,
+    distribute, sublicense, and/or sell copies of the Software, and to
+    permit persons to whom 
+}}}
+
+CONTENTS                                               *$name-contents*
+
 |$name-description|   Description
-|$name-syntax|        Syntax
 |$name-usage|         Usage
-|$name-settings|      Settings
-|$name-features|      Features
+|$name-key-mappings|  Key mappings
+|$name-variables|     Variables
 |$name-contact|       Contact
 
 For Vim version 7.0 or later.
@@ -118,9 +142,33 @@ This plugin only works if 'compatible' is not set.
 ==============================================================================
 DESCRIPTION                                             *$name-description*
 
-    Your Description here....
+*$name* is a plugin to provide way to ...
 
 ==============================================================================
+USAGE                                                   *$name-usage*
+
+
+==============================================================================
+KEY MAPPINGS                                            *$name-key-mappings*
+
+xx_key                                                               *xx_key*
+  key description here
+
+==============================================================================
+VARIABLES                                               *$name-variables*
+
+g:xxx_variable
+  Your variable here
+
+==============================================================================
+CHANGELOG                                               *$name-changelog*
+
+==============================================================================
+CONTACT                                                 *$name-contact*
+
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:fen:fdl=0:fdm=marker:
 END
         close DOC;
 }

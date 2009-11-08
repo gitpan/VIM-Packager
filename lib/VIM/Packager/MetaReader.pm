@@ -4,35 +4,10 @@ use strict;
 
 use YAML;
 
-use constant META_FILES => [ 'VIMMETA','META','VIMMETA.yml'];
 
-sub new { bless {} , shift }
+=head1 Synopsis
 
-sub meta { my $self = shift; return $self->{meta} ||= {}; }
-
-sub read_metafile {
-    my $self = shift;
-    # read meta_reader file
-
-    my $file = $self->find_meta_file();
-    die 'Can not found META file' unless -e $file;
-
-    open my $fh , "<" , $file ;
-    $self->read( $fh );
-    close $fh;
-
-    return $self->meta;
-}
-
-sub find_meta_file {
-    my $files = META_FILES;
-    for ( @$files ) {
-        return $_ if -e $_;
-    }
-}
-
-
-=pod Generic VIM Meta file format
+=head2 Generic VIM Meta file format
 
     =name            new_plugin
 
@@ -54,7 +29,77 @@ sub find_meta_file {
 
     =repository git://....../
 
+=head1 Description
+
+
+
+
+
+=head1 Constant
+
+=head2 META_FILES
+
+available metafile names: F<VIMMETA>, F<META>, F<VIMMETA.yml>
+
 =cut
+
+use constant META_FILES => [ 'VIMMETA','META','VIMMETA.yml'];
+
+=head1 Functions
+
+=head2 new
+
+=cut
+
+sub new { bless {} , shift }
+
+=head2 meta
+
+
+
+=cut
+
+sub meta { my $self = shift; return $self->{meta} ||= {}; }
+
+=head2 read_metafile
+
+read_metafile function tries to find available vim meta file 
+and parse meta file into hashref.
+
+return meta information in hashref.
+
+=cut
+
+sub read_metafile {
+    my $self = shift;
+    # read meta_reader file
+
+    my $file = $self->find_meta_file();
+    die 'Can not found META file' unless -e $file;
+
+    open my $fh , "<" , $file ;
+    $self->read( $fh );
+    close $fh;
+
+    return $self->meta;
+}
+
+=head2 find_meta_file
+
+find_meta_file function tries to find available vim meta file 
+
+return the filename of vim meta file (string)
+
+=cut
+
+sub find_meta_file {
+    my $files = META_FILES;
+    for ( @$files ) {
+        return $_ if -e $_;
+    }
+}
+
+
 
 sub read {
     my $self = shift;
@@ -136,10 +181,33 @@ sub _get_value {
     return $v;
 }
 
+=head2 __name
+
+Package Name
+
+=cut
+
 sub __name {
     my ($self,$value) = @_;
     $self->meta->{name} =$value;
 }
+
+=head2 __email
+
+Email
+
+=cut
+
+sub __email {
+    my ($self,$value) = @_;
+    $self->meta->{name} =$value;
+}
+
+=head2 __author
+
+Author name
+
+=cut
 
 sub __author {
     my ($self,$value) = @_;

@@ -15,6 +15,29 @@ our @EXPORT_OK = qw(install_deps install install_deps_remote);
 
 # FIXME:  install deps from vim script archive network.
 
+
+
+=head2 install_deps_from_repo
+
+    install dependencies from repository. e.g. repositories on github.com 
+
+    XXX: implement me.
+
+=cut
+
+sub install_deps_from_repo {
+
+}
+
+
+=head2 install_deps
+
+    install dependencies from VSAN.
+
+    XXX: implement me.
+
+=cut
+
 sub install_deps {
     my $deps = shift @ARGV;
     my @pkgs = split /,/,$deps;
@@ -42,6 +65,11 @@ sub install_deps {
 
 our $VERBOSE = $ENV{VERBOSE} ? 1 : 0;
 
+=head2 mk_record
+
+
+
+=cut
 
 sub mk_record {
     my $pkgname = shift;
@@ -49,6 +77,12 @@ sub mk_record {
     my $filelist = shift;
 
 }
+
+=head2 install_deps_remote
+
+
+
+=cut
 
 sub install_deps_remote {
     my $package_name = shift @ARGV;
@@ -136,6 +170,10 @@ sub install_deps_remote {
     }
 }
 
+=head2 prompt_for_different
+
+=cut
+
 sub prompt_for_different {
     my $target = shift;
     print "Installed script version not found. instead , we found the installed script file.\n";
@@ -147,6 +185,12 @@ sub prompt_for_different {
     return $ans;
 }
 
+
+=head2 diff_base_install ArrayRef:From , ArrayRef:To
+
+diff text
+
+=cut
 
 sub diff_base_install {
     my ($src_lines,$to_lines) = @_;
@@ -178,6 +222,14 @@ sub diff_base_install {
 
     return $result ? $result : undef;
 }
+
+
+
+=head2 install
+
+install package vimlib files
+
+=cut
 
 sub install {
     my %install_to = @ARGV;

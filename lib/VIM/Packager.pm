@@ -3,7 +3,17 @@ package VIM::Packager;
 use warnings;
 use strict;
 
-# ABSTRACT: Vim Packager builder / installer
+=head1 NAME
+
+VIM::Packager
+
+=head1 VERSION
+
+Version 0.07
+
+=cut
+
+our $VERSION = '0.07';
 
 =head1 SYNOPSIS
 
@@ -11,6 +21,11 @@ use strict;
 
 =head1 DESCRIPTION
 
+
+
+=head1 FUNCTIONS
+
+=cut
 
 =head1 REPOSITORY 
 
