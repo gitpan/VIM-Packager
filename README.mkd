@@ -178,32 +178,29 @@ you can also define your 'MANIFEST.SKIP' file
 FOR AN EXISTED VIM DISTRIBUTION
 ===============================
 
+    $ cat > ~/.vim-author
+    author: Your Name 
+    email:  zzz@gmail.com
+
     $ cd my_plugin
 
-    $ ls -1
+    $ vim-packager init --type=plugin --dirs=basic
 
-        after/
-        syntax/
-        plugin/
-        doc/
-        README
+    Creating directories.
+    mkdir vimlib/autoload
+    mkdir vimlib/syntax
+    mkdir vimlib/plugin
+    mkdir vimlib/ftplugin
+    mkdir vimlib/ftdetect
+    mkdir vimlib/doc
+    Creating doc skeleton.
+    Writing META.
+    Creating README
 
-    $ vim-packager init \
-        --name=your_plugin \
-        --author=your_name \
-        --email=your@email.com \
-        --type=plugin
+        # --type and --dirs is optional
 
-        # --type is optional
-
-which generates
-
-        VIMMETA
-        MANIFEST
-        .IGNORE
-        vimlib/....
-
-and mv your vim directories into vimlib/ , if you dont want this then specify `--no-migration`
+this will mv your vim directories into vimlib/ , if you dont want this then
+specify `--no-migration`
 
 your should update your package information in VIMMETA file
 

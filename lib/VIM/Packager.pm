@@ -1,7 +1,9 @@
 package VIM::Packager;
-
 use warnings;
 use strict;
+use Exporter::Lite;
+our @EXPORT = qw(say);
+sub say { print @_ , "\n" }
 
 =head1 NAME
 
@@ -9,11 +11,11 @@ VIM::Packager
 
 =head1 VERSION
 
-Version 0.07
+Version 0.08
 
 =cut
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 =head1 SYNOPSIS
 
