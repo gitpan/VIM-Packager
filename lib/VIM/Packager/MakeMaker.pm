@@ -2,6 +2,7 @@ package VIM::Packager::MakeMaker;
 use warnings;
 use strict;
 
+use VIM::Packager;
 use VIM::Packager::MetaReader;
 use VIM::Packager::Utils qw(vim_rtp_home vim_inst_record_dir findbin);
 use DateTime::Format::DateParse;
@@ -144,7 +145,7 @@ sub new {
     add_st $main => q|$(NOECHO) $(TOUCH) MANIFEST.SKIP|;
 
     new_section $main => 'dist';
-    add_st $main => q|$(TAR) $(TARFLAGS) $(DISTNAME).tar.gz $(TO_INST_VIMS)|;
+    add_st $main => q|$(TAR) $(TARFLAGS) $(DISTNAME).tar.gz $(TO_INST_VIMS) $(META_FILE) $(README)|;
 	add_noop_st $main;
 
     new_section $main => 'help';
@@ -372,24 +373,26 @@ sub config_section {
     my $perl = find_perl();
     die "Can not found perl." unless $perl;
 
-    $configs{FULLPERL} ||= $perl;
-    $configs{NOECHO}   ||= '@';
-    $configs{TOUCH}    ||= 'touch';
-    $configs{ECHO}     ||= 'echo';
-    $configs{ECHO_N}   ||= 'echo -n';
-    $configs{RM_F}     ||= "rm -vf";
-    $configs{RM_RF}    ||= "rm -rf";
-    $configs{TEST_F}   ||= "test -f";
-    $configs{CP}       ||= "cp";
-    $configs{MV}       ||= "mv";
-    $configs{CHMOD}    ||= "chmod";
-    $configs{FALSE}    ||= 'false';
-    $configs{TRUE}     ||= 'true';
-    $configs{NOOP}     ||= '$(TRUE)';
-    $configs{LN_S}     ||= 'ln -sv';
+    $configs{FULLPERL}  ||= $perl;
+    $configs{NOECHO}    ||= '@';
+    $configs{TOUCH}     ||= 'touch';
+    $configs{ECHO}      ||= 'echo';
+    $configs{ECHO_N}    ||= 'echo -n';
+    $configs{RM_F}      ||= "rm -vf";
+    $configs{RM_RF}     ||= "rm -rf";
+    $configs{TEST_F}    ||= "test -f";
+    $configs{CP}        ||= "cp";
+    $configs{MV}        ||= "mv";
+    $configs{CHMOD}     ||= "chmod";
+    $configs{FALSE}     ||= 'false';
+    $configs{TRUE}      ||= 'true';
+    $configs{NOOP}      ||= '$(TRUE)';
+    $configs{LN_S}      ||= 'ln -sv';
     $configs{LN_SF}     ||= 'ln -svf';
-    $configs{PWD}      ||= '`pwd`';
-    $configs{CP}       ||= 'cp -v';
+    $configs{PWD}       ||= '`pwd`';
+    $configs{CP}        ||= 'cp -v';
+    $configs{README}    ||= 'README README.*';
+    $configs{META_FILE} ||= VIM::Packager::MetaReader->find_meta_file();
 
     $configs{FIRST_MAKEFILE} ||= 'Makefile';
     $configs{MAKEFILE_OLD}   ||= 'Makefile.old';

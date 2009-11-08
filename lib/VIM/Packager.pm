@@ -9,21 +9,15 @@ sub say { print @_ , "\n" }
 
 VIM::Packager
 
-=head1 VERSION
-
-Version 0.08
-
 =cut
 
-our $VERSION = '0.08';
+our $VERSION = 1257708674.957193 ;
 
 =head1 SYNOPSIS
 
     use VIM::Packager;
 
 =head1 DESCRIPTION
-
-
 
 =head1 FUNCTIONS
 
