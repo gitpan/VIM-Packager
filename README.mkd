@@ -114,6 +114,9 @@ fill your 'VIMMETA' file
         autocomplpop.vim > 0.3
         rainbow.vim      >= 1.2
 
+        # install package from git repository
+        cpan.vim > 0
+            git://github.com/c9s/cpan.vim.git  
 
         # for depended scripts which is not on archive network (not existed yet)
         # we can specify an url to retrieve.

@@ -10,6 +10,7 @@ use YAML;
 use File::Spec;
 use File::Path;
 use File::Find;
+use VIM::Packager::Record;
 
 our $VERSION = 0.0.1;
 my  $VERBOSE = 1;
@@ -239,14 +240,9 @@ sub section_pure_install {
         }
     }
     else {
-
         add_st $main =>
             q|$(NOECHO) $(FULLPERL) $(PERLFLAGS) -MVIM::Packager::Installer=install|
-            . q| -e 'install()' $(VIMS_TO_RUNT) |;
-
-        add_st $main =>
-            q|$(NOECHO) $(FULLPERL) $(PERLFLAGS) -MVIM::Packager::Installer=install|
-            . q| -e 'install()' $(BIN_TO_RUNT) |;
+            . q| -e 'install()' $(NAME) $(VIMS_TO_RUNT) $(BIN_TO_RUNT)|;
     }
 }
 
@@ -264,17 +260,21 @@ sub section_deps {
 
     if( $self->{cmd}->{pure} ) {
         print "You are making a pure makefile that doesn't depend on perl module.\n";
-        print "We are going to skip deps section.\n";
+        print "We are going to skip dependency section.\n";
         add_noop_st $main;
         return;
     }
 
+    my $requires = $self->check_dependency( $self->meta );
+    my %unsatisfied      = %{ $requires->{unsat} };
+    my %nonversion_unsat = %{ $requires->{nonversion_unsat} };
 
-    my %unsatisfied = $self->check_dependency( $self->meta );
-    my @pkgs_nonversion = grep { ref($unsatisfied{$_}) eq 'ARRAY' } sort keys %unsatisfied;
+    # grep out the non-version package requires from those unsatisfied infomation
+    # which is an array ref because it's a file list.
+    my @pkgs_nonversion = keys %nonversion_unsat;
     for my $pkgname ( @pkgs_nonversion ) {
         my @nonversion_params = map {  ( $_->{target} , $_->{from} ) } 
-            map { @{ $unsatisfied{ $_ } } } $pkgname ;
+            map { @{ $nonversion_unsat{ $_ } } } $pkgname ;
 
         add_st $main => multi_line q|$(NOECHO) $(FULLPERL) $(PERLFLAGS)|
                     . qq| -MVIM::Packager::Installer=install_deps_remote |
@@ -283,10 +283,24 @@ sub section_deps {
 
     }
 
-    my @pkgs_version = grep {  ref($unsatisfied{$_}) ne 'ARRAY' } sort keys %unsatisfied;
+    # XXX: grep git repo deps from upstream ... zzz
+    # packages with version specified.
+    my @pkgs_version = keys %unsatisfied;
     if( @pkgs_version > 0 ) {
+        my @pkgs_git_repo = grep { $unsatisfied{ $_ }->{git_repo} } @pkgs_version;
+        for my $pkg ( @pkgs_git_repo ) {
+            my $dep = $unsatisfied{ $pkg };
+            
+            my $v = $dep->{version};
+            add_st $main => q|$(NOECHO) $(FULLPERL) $(PERLFLAGS) -MVIM::Packager::Installer=install_deps_from_git |
+                . qq| -e 'install_deps_from_git()' @{[ $dep->{git_repo} ]} $v|;
+        }
+
+        my @pkgs_version = grep { ! $unsatisfied{ $_ }->{git_repo} } @pkgs_version;
+        
         add_st $main => q|$(NOECHO) $(FULLPERL) $(PERLFLAGS) -MVIM::Packager::Installer=install_deps  |
-                . qq| -e 'install_deps()' '@{[ join ",",@pkgs_version ]}' |;
+                . qq| -e 'install_deps()' '@{[ join ",",@pkgs_version ]}' |
+                        if @pkgs_version > 0;
     }
 }
 
@@ -470,35 +484,49 @@ sub check_dependency {
     my @pkg_records = $self->get_installed_pkgs($record_dir);
 
     my %unsatisfied = ();
+    my %nonversion_unsat = ();
+
     for my $dep ( @{ $meta->{dependency} } ) {
 
         if ( defined $dep->{version} ) {
-            my ( $prereq, $required_version, $version_op ) = @$dep{qw(name version op)};
-
-            my $installed_files;  # XXX: get installed files of prerequire plugins
+            my ( $prereq, $required_version, $version_op , $git_repo ) 
+                        = @$dep{qw(name version op git_repo)};
 
             # XXX: check if prerequire plugin is installed. 
-            #      try to get installed package record by vimana manager 
+            #      try to get installed package record 
             #      or just look into file and parse the version
-            my $pr_version = 0 ; $pr_version = parse_version( $installed_files ) if $installed_files;  
+            my $pr_version = undef ;
 
-            if( ! $installed_files ) {
+            my $found = VIM::Packager::Record->find( $prereq );
+            if( $found ) {
+                my $r = VIM::Packager::Record->read( $found );
+                $pr_version = $r->{meta}->{version};
+                print "Found Installed Package: $prereq \n";
+                print "Version: $pr_version\n";
+            }
+            else {
+                my $installed_files; # get installed files here
+                $pr_version = parse_version( $installed_files ) if( $installed_files );
+            }
+
+            if( ! $pr_version ) {
                 warn sprintf "Warning: prerequisite %s - %s not found.\n", 
-                $prereq, $required_version;
-
-                $unsatisfied{ $prereq } = 'not installed';
+                    $prereq, $required_version;
+                $unsatisfied{ $prereq } = $dep;
             }
             elsif ( eval "$pr_version $version_op $required_version"  ) {
                 warn sprintf "Warning: prerequisite %s - %s not found. We have %s.\n",
-                    $prereq, $required_version, ($pr_version || 'unknown version') ;
-                $unsatisfied{ $prereq } = $pr_version;
+                    $prereq, $required_version, $pr_version;
+
+                $unsatisfied{ $prereq } = $dep;
             }
+
         }
         else {
             # if we can not detect installed package version
             # here is the other way to install dependencies.
             my ( $prereq , $require_files ) = ( $dep->{name}  , $dep->{required_files} );
-            $unsatisfied{ $prereq } = $require_files; 
+            $nonversion_unsat{ $prereq } = $require_files; 
 
             # XXX: grep out ?
             for ( @$require_files ) {
@@ -518,7 +546,10 @@ sub check_dependency {
 
     }
 
-    return %unsatisfied;
+    return {
+        unsat => \%unsatisfied,
+        nonversion_unsat => \%nonversion_unsat,
+    };
 }
 
 

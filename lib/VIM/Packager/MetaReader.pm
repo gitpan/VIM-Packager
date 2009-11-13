@@ -11,16 +11,27 @@ use YAML;
 
     =name            new_plugin
 
+    =abstract        vim plugin blah blah blah
+
     =author          Cornelius (cornelius.howl@gmail.com)
 
     =version_from    plugin/new_plugin.vim   # extract version infomation from this file
 
     =type            syntax
 
+    =script_id       [script id on vim.org]    # for uploading script to vim.org
+
     =dependency
 
         autocomplpop.vim > 0.3
         rainbow.vim      >= 1.2
+
+        libperl.vim
+            | autoload/libperl.vim | http://....../..././.../libperl.vim
+            | autoload/std.vim | http://....../..././.../std.vim
+
+        cpan.vim > 0
+            git://github.com/c9s/cpan.vim.git  # install from git repository
 
     =script
 
@@ -133,14 +144,14 @@ sub read {
             $self->$dispatch( $lines );
         }
         else {
-            print "meta tag $sec is not supported. but we will still save to Makefile\n";
+            # print "Meta tag $sec is not supported. but we will still save to Makefile\n";
             $self->{meta}->{ $sec } = $lines;
         }
 
     }
 =pod
 
-    # check for mandatory meta info
+    # XXX: check for mandatory meta info
     my $fall;
     my $meta = $class->meta;
     for ( qw(name author version type vim_version) ) {
@@ -181,33 +192,15 @@ sub _get_value {
     return $v;
 }
 
-=head2 __name
-
-Package Name
-
-=cut
-
 sub __name {
     my ($self,$value) = @_;
     $self->meta->{name} =$value;
 }
 
-=head2 __email
-
-Email
-
-=cut
-
 sub __email {
     my ($self,$value) = @_;
     $self->meta->{name} =$value;
 }
-
-=head2 __author
-
-Author name
-
-=cut
 
 sub __author {
     my ($self,$value) = @_;
@@ -217,6 +210,11 @@ sub __author {
 sub __version {
     my ($self,$value) = @_;
     $self->meta->{version} = $value;
+}
+
+sub __abstract {
+    my ($self,$value) = @_;
+    $self->meta->{abstract} =$value;
 }
 
 sub __type {
@@ -260,6 +258,7 @@ sub __dependency {
         #       plugin.vim  > 1.0
         if( m{^ ($package_re) \s+ ([=<>]{1,2}) \s+ ([0-9.]+) }x ) {
             my ( $name, $op, $version ) = ( $1, $2, $3 );
+            $cur_name = $name;
             $pkgs{ $name } = {
                 name => $name,
                 op => $op,
@@ -281,13 +280,18 @@ sub __dependency {
             push @{ $pkgs{ $cur_name } } , {  from => $from , target => $target  };
         }
         
-
+        # from git repository
+        elsif( m{^git://} )  {
+            my $git_repo = $_;
+            $pkgs{ $cur_name }->{git_repo} = $git_repo;
+        }
     }
 
     $self->meta->{dependency} = [
         map( { { name => $_, required_files => $pkgs{$_} } } grep { ref( $pkgs{$_} ) eq 'ARRAY' } keys %pkgs ),
         map( { $pkgs{$_} } grep { ref( $pkgs{$_} ) ne 'ARRAY' } keys %pkgs ),
     ];
+
 }
 
 

@@ -8,27 +8,53 @@ use Exporter::Lite;
 use YAML;
 use VIM::Packager::Utils qw(vim_rtp_home vim_inst_record_dir findbin);
 use LWP::UserAgent;
+use VIM::Packager::Record;
 use VIM::Packager::MetaReader;
+use Carp;
+use FileHandle;
 
 our @EXPORT = ();
-our @EXPORT_OK = qw(install_deps install install_deps_remote);
+our @EXPORT_OK = qw(install_deps install install_deps_remote install_deps_from_git);
+
 
 # FIXME:  install deps from vim script archive network.
 
 
-
-=head2 install_deps_from_repo
+=head2 install_deps_from_git
 
     install dependencies from repository. e.g. repositories on github.com 
 
-    XXX: implement me.
-
 =cut
 
-sub install_deps_from_repo {
+sub install_deps_from_git {
+    my $clone_path = shift @ARGV;
+    my $version_required = shift @ARGV;
 
+    require VIM::Packager::MakeMaker;
+    require VIM::Packager::Git;
+    my $g = VIM::Packager::Git->new;
+    $g->clone( $clone_path );
+
+    # convert meta to makefile
+    my $maker = VIM::Packager::MakeMaker->new;
+
+    my $system = "make";
+    my $stderr = $^O eq "MSWin32" ? "" : " 2>&1 ";
+
+    my $pipe = FileHandle->new("$system install $stderr |") 
+        || Carp::croak("Can't execute $system: $!");
+
+    my $makeout = "";
+    while (<$pipe>) {
+        print $_; # intentionally NOT use Frontend->myprint because it
+                  # looks irritating when we markup in color what we
+                  # just pass through from an external program
+        $makeout .= $_;
+    }  
+    $pipe->close;
+
+    $g->cleanup();
 }
-
 
 =head2 install_deps
 
@@ -62,33 +88,19 @@ sub install_deps {
 
 }
 
-
 our $VERBOSE = $ENV{VERBOSE} ? 1 : 0;
-
-=head2 mk_record
-
-
-
-=cut
-
-sub mk_record {
-    my $pkgname = shift;
-    my $version = shift;
-    my $filelist = shift;
-
-}
 
 =head2 install_deps_remote
 
 
-
 =cut
 
+# XXX: give all dependency pkgnames in one time
 sub install_deps_remote {
-    my $package_name = shift @ARGV;
+    my $pkgname = shift @ARGV;
     my %install = @ARGV;
 
-    print sprintf( "Installing dependencies: %s\n",  $package_name);
+    print sprintf( "Installing dependencies: %s\n",  $pkgname);
 
     $|++;
     while( my ($target,$from) = each %install ) {
@@ -170,6 +182,7 @@ sub install_deps_remote {
     }
 }
 
+
 =head2 prompt_for_different
 
 =cut
@@ -232,10 +245,41 @@ install package vimlib files
 =cut
 
 sub install {
+    my $pkgname = shift @ARGV;
     my %install_to = @ARGV;
 
-    # XXX: we should check more details on those files which are going to be
+    my $meta = VIM::Packager::MetaReader->new->read_metafile();
+
+    # we should check more details on those files which are going to be
     #      installed.
+    my $found_record = VIM::Packager::Record::find( $pkgname );
+    if( $found_record and -e $found_record ) {
+        my $r = VIM::Packager::Record::read( $found_record );
+        my $version = $r->{meta}->{version};
+        printf "Found installed package: %s v%s\n" , $pkgname , $version ;
+        # print join("\n -","Installed files:" , @{ $r->{files} }) . "\n";
+
+        # uninstall older version
+        if( $version < $meta->{version} ) {
+            print "We require version up to " . $meta->{version} . "\n";
+            print "Uninstalling $pkgname v$version\n";
+            for my $f ( $r->{files} ) {
+                if( -e $f ) {
+                    print "Removing $f\n";
+                    unlink $f;
+                }
+                else {
+                    print "Warning: Can not found file $f\n";
+                }
+            }
+        }
+        else {
+            print "Package $pkgname has been installed. Skipped.\n";
+            return;
+        }
+    }
+
+    print "Installing $pkgname " . $meta->{version} . "\n";
     while( my ($from,$to) = each %install_to ){
         my ( $v, $dir, $file ) = File::Spec->splitpath($to);
 
@@ -261,21 +305,16 @@ sub install {
         }
     }
 
-    # make installation record
-    my $meta = VIM::Packager::MetaReader->new->read_metafile();
-    my $files = values %install_to;
 
-    my $record_path = $ENV{VIMPKG_RECORDDIR} || File::Spec->join($ENV{HOME},'.vim','record');
+    my @files = values %install_to;
+    VIM::Packager::Record::save( $pkgname , $meta , \@files );
 
-    mkdir $record_path unless $record_path;
-    YAML::DumpFile( File::Spec->join( $record_path ,
-        $meta->{name} 
-      ) , { 
-        meta => $meta, 
-        files => $files 
-    } );
-
-    # XXX: update doc tags here
+    print "Updating doc tags\n";
+    system(qq|vim -c ':helptags \$VIMRUNTIME/doc'  -c q |);
+    print "Done\n";
 }
+
+
+
 
 1;

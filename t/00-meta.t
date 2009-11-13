@@ -46,6 +46,9 @@ my $sample =<<END;
         | autoload/acp.vim | http://c9s.blogspot.com
         | plugin/acp.vim   | http://plurk.com/c9s
 
+    cpan.vim > 0
+        git://github.com/c9s/cpan.vim.git
+
 =script
     bin/parser
     bin/template_generator
@@ -65,7 +68,6 @@ close $fh;
 
 my $meta_object = $meta->meta;
 ok( $meta_object );
-
 
 # use Data::Dumper;warn Dumper( $meta_object->{dependency} );
 
@@ -88,6 +90,12 @@ is_deeply(
             'version' => '0.3',
             'name' => 'something.vim',
             'op' => '>'
+          },
+          {
+            'name' => 'cpan.vim',
+            'version' => 0,
+            'op' => '>',
+            'git_repo' => 'git://github.com/c9s/cpan.vim.git',
           },
           {
             'version' => '1.2',
