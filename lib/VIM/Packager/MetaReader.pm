@@ -232,7 +232,7 @@ sub __version_from {
     close FH;
     
     for ( @lines ) {
-        if( /^"=VERSION ([0-9.]+)$/ or /^" Version: ([0-9.]+)$/i ) {
+        if( /^"=VERSION ([0-9.]+)$/ or /^"\s*Version:\s*([0-9.]+)$/i ) {
             $self->meta->{version} = $1;
             return;
         }
