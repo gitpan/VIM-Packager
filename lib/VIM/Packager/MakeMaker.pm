@@ -164,9 +164,8 @@ sub new {
                 . multi_line qw|$(PWD)/$(DISTNAME).tar.gz $(VIM_VERSION) $(VERSION) $(SCRIPT_ID)|;
 
     new_section $main => 'clean';
-    add_st $main      => multi_line q|$(RM)|, qw(pure_install install-deps);
     add_st $main      => q|$(MV) $(FIRST_MAKEFILE) $(MAKEFILE_OLD)|;
-
+    add_st $main      => q|$(RM) *.tar.gz|;
 
     $self->generate_makefile( [
             { meta   => \@meta_section },
@@ -405,7 +404,11 @@ sub config_section {
     $configs{LN_SF}     ||= 'ln -svf';
     $configs{PWD}       ||= '`pwd`';
     $configs{CP}        ||= 'cp -v';
-    $configs{README}    ||= 'README README.*';
+
+    $configs{README} ||= '';
+    $configs{README} .= ' README'     if -e 'README';
+    $configs{README} .= ' README.mkd' if -e 'README.mkd';
+
     $configs{META_FILE} ||= VIM::Packager::MetaReader->find_meta_file();
 
     $configs{FIRST_MAKEFILE} ||= 'Makefile';

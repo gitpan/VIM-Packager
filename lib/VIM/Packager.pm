@@ -11,7 +11,7 @@ VIM::Packager
 
 =cut
 
-our $VERSION = 1258140449.764605 ;
+our $VERSION = 2009.32120 ;
 
 =head1 SYNOPSIS
 

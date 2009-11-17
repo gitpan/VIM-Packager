@@ -7,7 +7,6 @@ license  'perl';
 
 requires(
     'App::CLI'                    => 0.08,
-    'Carp'                        => 1.11,
     'DateTime::Format::DateParse' => 0.04,
     'Exporter::Lite'              => 0.02,
     'File::Basename'              => 0,
@@ -16,7 +15,7 @@ requires(
     'File::Path'                  => 2.07,
     'File::Spec'                  => 3.3,
     'Getopt::Long'                => 2.38,
-    'LWP::UserAgent'                 => 0,
+    'LWP::UserAgent'              => 0,
     'YAML'                        => 0.70,
 );
 
@@ -24,10 +23,9 @@ feature 'Upload vim script dist to vim.org' =>
     -default => 1,
     recommends('VIM::Uploader' => '0');
 
-feature 'Diff with remote download script' => 
+feature 'Diff with remote downloaded script' => 
     -default => 1,
     recommends('Algorithm::Diff' => '0');
-
 
 build_requires 'Test::More';
 

@@ -232,11 +232,8 @@ sub __version_from {
     close FH;
     
     for ( @lines ) {
-        if( /^"=VERSION/ ) {
-            my $line = $_;
-            chomp $line;
-            $line =~ s/^"//;
-            $self->meta->{version} = _get_value( $line );
+        if( /^"=VERSION ([0-9.]+)$/ or /^" Version: ([0-9.]+)$/i ) {
+            $self->meta->{version} = $1;
             return;
         }
     }
