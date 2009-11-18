@@ -264,7 +264,7 @@ sub install {
         if( $version < $meta->{version} ) {
             print "We require version up to " . $meta->{version} . "\n";
             print "Uninstalling $pkgname v$version\n";
-            for my $f ( $r->{files} ) {
+            for my $f ( @{ $r->{files} } ) {
                 if( -e $f ) {
                     print "Removing $f\n";
                     unlink $f;
