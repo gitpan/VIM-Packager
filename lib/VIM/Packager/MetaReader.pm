@@ -199,7 +199,7 @@ sub __name {
 
 sub __email {
     my ($self,$value) = @_;
-    $self->meta->{name} =$value;
+    $self->meta->{email} =$value;
 }
 
 sub __author {

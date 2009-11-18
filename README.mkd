@@ -1,4 +1,13 @@
-# XXX: move this into pod , and extract readme.mkd from .pm file.
+INTRODUCTION
+============
+
+`VIM::Pacakger` is an util for vim script pacakge. features are:
+
+    - dependency solving
+    - easy to install, uninstall, upgrade vim scripts
+    - vim script testing
+    - simple meta file
+    - vim script developing helpers
 
 INSTALLATION
 ============

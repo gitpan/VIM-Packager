@@ -14,7 +14,7 @@ use Carp;
 use FileHandle;
 
 our @EXPORT = ();
-our @EXPORT_OK = qw(install_deps install install_deps_remote install_deps_from_git);
+our @EXPORT_OK = qw(install_deps install install_deps_remote install_deps_from_git uninstall);
 
 
 # FIXME:  install deps from vim script archive network.
@@ -238,9 +238,11 @@ sub diff_base_install {
 
 
 
-=head2 install
+=head2 install $pkgname %install_files
 
 install package vimlib files
+
+%install_file is a hash, which key is source file , value is target path of installation.
 
 =cut
 
@@ -257,7 +259,6 @@ sub install {
         my $r = VIM::Packager::Record::read( $found_record );
         my $version = $r->{meta}->{version};
         printf "Found installed package: %s v%s\n" , $pkgname , $version ;
-        # print join("\n -","Installed files:" , @{ $r->{files} }) . "\n";
 
         # uninstall older version
         if( $version < $meta->{version} ) {
@@ -275,6 +276,7 @@ sub install {
         }
         else {
             print "Package $pkgname has been installed. Skipped.\n";
+            print "run \$ make uninstall before make install if you need to reinstall it\n";
             return;
         }
     }
@@ -315,6 +317,34 @@ sub install {
 }
 
 
+=head2 uninstall [pkgname]
+
+=cut
+
+sub uninstall {
+    my $pkgname = shift @ARGV;
+    my $f = VIM::Packager::Record::find( $pkgname );
+
+    unless( $f and -e $f ) {
+        print "Can not found record of $pkgname\n";
+        return ;
+    }
+
+    my $r = YAML::LoadFile( $f );
+    my @files = @{ $r->{files} };
+
+    for ( @files ) {
+        print "Removing $_\n";
+        if( ! -e $_ ) {
+            print "Warning: can not found file $_.\n";
+            next;
+        }
+        unlink $_;
+    }
+
+    print "Removing record $pkgname\n";
+    unlink $f;
+}
 
 
 1;

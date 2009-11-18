@@ -153,9 +153,8 @@ sub new {
     add_st $main => q|perldoc VIM::Packager|;
 
     new_section $main => 'uninstall';
-    for( values %$filelist ) {
-        add_st $main => q|$(RM_F) | . $_ ;
-    }
+    add_st $main => q|$(NOECHO) $(FULLPERL) $(PERLFLAGS) -MVIM::Packager::Installer=uninstall  |
+            . q| -e 'uninstall()' $(NAME)|;
 
     # XXX: prompt user to uninstall depedencies
 
@@ -601,31 +600,6 @@ sub make_filelist {
         $install{ $src } = $target;
     } , $base_prefix );
     return \%install;
-}
-
-# XXX: implement me
-sub full_setup {
-    my @attrib_help = qw(
-        AUTHOR
-        NAME
-        CONFIGURE
-        INST_AUTOLOAD
-        INST_PLUGIN
-        INST_SYNTAX
-
-        INST_AFTER_PLUGIN
-        INST_AFTER_AUTOLOAD
-        INST_AFTER_FTPLUGIN
-    );
-
-    my @MM_Sections = qw(
-        all
-        dist
-        depend
-        install
-        clean
-        force
-    );
 }
 
 

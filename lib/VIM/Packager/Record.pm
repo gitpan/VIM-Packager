@@ -16,6 +16,10 @@ sub get_record_dir {
 sub get_record_file { File::Spec->join( get_record_dir() , $_[0] ) }
 
 
+=head2 find [package name]
+
+=cut
+
 sub find {
     my $path = get_record_file $_[0];
     return $path if -e $path;
@@ -31,7 +35,6 @@ sub read {
     }
     return $r;
 }
-
 
 sub save {
     my ($pkgname , $meta , $files ) = @_;

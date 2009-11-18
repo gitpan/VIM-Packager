@@ -20,4 +20,6 @@
 * vimball support (makefile maker) 
     $ make vimball
 * support scaning vimball install record. and install.
-
+* support unit testing (unit-test.vim)
+* uninstall package
+* fix installer copy method.
