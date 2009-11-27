@@ -14,6 +14,7 @@ requires(
     'File::Find'                  => 1.14,
     'File::Path'                  => 2.07,
     'File::Spec'                  => 3.3,
+    'File::Temp'                  => 0,
     'Getopt::Long'                => 2.38,
     'LWP::UserAgent'              => 0,
     'YAML'                        => 0.70,

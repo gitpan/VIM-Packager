@@ -4,6 +4,20 @@ use strict;
 
 use YAML;
 
+sub trim_comment {
+    my $c = shift;
+    $c =~ s/#.*$//; # skip comment
+    return $c;
+}
+
+sub trim {
+    my $c = shift;
+    $c =~ s/^\s*//;
+    $c =~ s/\s*$//;
+    return $c;
+}
+
+
 
 =head1 Synopsis
 
@@ -123,13 +137,12 @@ sub read {
     my %sections = ();
     for ( @lines ) {
         chomp;
-        $_ = trim_comment($_);
-        $_ = trim( $_ );
+        $_ = trim trim_comment($_);
         next if blank($_);
 
         if( /^=(\w+)(?:\s+(.*?))?$/ ) {
             $cur_section = $1;
-            $sections{ $cur_section} = $2 if $2;
+            $sections{$cur_section} = $2 if $2;
             next;
         }
 
@@ -167,18 +180,6 @@ sub read {
 
 my $package_re = '[0-9a-zA-Z._-]+';
 
-sub trim_comment {
-    my $c = shift;
-    $c =~ s/#.*$//; # skip comment
-    return $c;
-}
-
-sub trim {
-    my $c = shift;
-    $c =~ s/^\s*//;
-    $c =~ s/\s*$//;
-    return $c;
-}
 
 sub blank {
     my $c = shift;
@@ -239,9 +240,23 @@ sub __version_from {
     }
     print "Warning: Can not found version, you should declare your version in your vim script.\n";
     print "For example \n";
-    print " \"=VERSION 0.3 \n";
+    print " \" Version: 0.3 \n";
 }
 
+=head2 __install_dirs
+
+if you don't like F<vimlib/>
+
+=cut
+
+sub __install_dirs {
+    my ($self,$lines) = @_;
+    $self->meta->{install_dirs} = [];
+    for ( @$lines ) {
+        $_ = trim $_;
+        push @{  $self->meta->{install_dirs} },$_ if $_;
+    }
+}
 
 sub __dependency {
     my ( $self, $lines ) = @_;
@@ -290,7 +305,6 @@ sub __dependency {
     ];
 
 }
-
 
 sub __script {
     my ( $self, $lines ) = @_;

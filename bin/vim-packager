@@ -8,7 +8,7 @@ $|++;
 my $cmd = shift @ARGV;
 my $ret = VIM::Packager::Command->invoke( $cmd, @ARGV );
 
-exit (defined $ret ? $ret : 1);
+# exit (defined $ret ? $ret : 1);
 
 1;
 __END__

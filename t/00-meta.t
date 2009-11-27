@@ -1,4 +1,4 @@
-use Test::More tests => 16;
+use Test::More tests => 17;
 use warnings;
 use strict;
 use lib 'lib';
@@ -49,6 +49,11 @@ my $sample =<<END;
     cpan.vim > 0
         git://github.com/c9s/cpan.vim.git
 
+=install_dirs
+
+    plugin/
+    autoload/
+
 =script
     bin/parser
     bin/template_generator
@@ -69,7 +74,9 @@ close $fh;
 my $meta_object = $meta->meta;
 ok( $meta_object );
 
-# use Data::Dumper;warn Dumper( $meta_object->{dependency} );
+is_deeply(
+    [ sort @{ $meta_object->{install_dirs} } ],
+    [ sort ('plugin/', 'autoload/') ] );
 
 is_deeply(
     $meta_object->{dependency} , [

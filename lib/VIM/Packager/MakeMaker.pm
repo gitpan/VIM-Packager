@@ -121,7 +121,7 @@ sub new {
 
     push @$main, q|.PHONY: all install clean uninstall help upload link|;
     
-    my $filelist = $self->make_filelist();
+    my $filelist = $self->make_filelist( LIBPATH );
 
     $makefile->{filelist} = $filelist;
 
@@ -157,6 +157,8 @@ sub new {
             . q| -e 'uninstall()' $(NAME)|;
 
     # XXX: prompt user to uninstall depedencies
+    new_section $main => 'reinstall' , qw(uninstall install);
+    add_noop_st $main;
 
     new_section $main => 'upload' , qw(dist);
     add_st $main => q|$(FULLPERL) $(PERLFLAGS) -MVIM::Packager::Uploader=upload -e 'upload()' |
@@ -165,6 +167,14 @@ sub new {
     new_section $main => 'clean';
     add_st $main      => q|$(MV) $(FIRST_MAKEFILE) $(MAKEFILE_OLD)|;
     add_st $main      => q|$(RM) *.tar.gz|;
+
+    new_section $main => 'bump';
+    add_st $main => q|$(NOECHO) $(FULLPERL) $(PERLFLAGS) -MVIM::Packager::Installer=bump_version -e 'bump_version()' |;
+    add_st $main => q|sh -c 'vim-packager build'|;  # rebuild
+    add_st $main => q|sh -c 'make upload'|;
+
+    new_section $main => 'release' , qw(bump);
+    add_noop_st $main;
 
     $self->generate_makefile( [
             { meta   => \@meta_section },
@@ -433,6 +443,7 @@ sub file_section {
     my @to_install = keys %$filelist;
 
     add_macro \@section , VIMLIB => LIBPATH;
+
     add_macro \@section , VIMMETA => VIM::Packager::MetaReader::find_meta_file();
 
     add_macro \@section , TO_INST_VIMS => multi_line @to_install ;
@@ -576,11 +587,24 @@ sub init_vim_dir_macro {
 }
 
 
+=head2 make_filelist
+
+if install_dirs is given , then we should record:
+
+    autoload/zzz.vim
+    plugin/xxx.vim
+
+if not , then we should find files from F<vimlib/>
+
+    TO_INSTALL=$(VIM_BASEDIR)/plugin/xxx.vim
+        \ $(VIM_BASEDIR)/autoload/zzz.vim
+
+=cut
+
 sub make_filelist {
-    my $self = shift;
+    my ( $self, $base_prefix ) = @_;
 
     my %install = ();
-    my $base_prefix = LIBPATH;
 
     # my $prefix = File::Spec->join($ENV{HOME} , '.vim');
     my $prefix = '$(VIM_BASEDIR)';

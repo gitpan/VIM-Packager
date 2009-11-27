@@ -12,14 +12,52 @@ INTRODUCTION
 INSTALLATION
 ============
 
+there are 3 ways for you to install VIM::Packager
+
+1. Shipwright package, just a simple step:
+
+    $ curl http://www.oulixe.us/vim-packager-2009-11-25.bin | perl
+    $ export PATH=~/vim-packager/bin/:$PATH
+    # then you got vim-packager here
+
+2. via Makefile.PL:
+
     $ perl Makefile.PL
     $ sudo make             # you might need sudo if you have to install the dependencies.
     $ sudo make install
 
+3. via CPAN:
+
+    $ sudo cpan VIM::Packager
 
 VIM::Packager ABSTRACT
 =======================
 
+    $ vim-packager build 
+    $ make install
+    $ make uninstall
+    $ make reinstall
+    $ make clean
+    $ make link
+    $ make link-force
+
+    $ make release
+    $ make bump
+    $ make dist
+    $ make upload
+
+TODO:
+
+generate vimball script:
+
+    $ make vimball
+
+to scan installed vimballs:
+
+    $ make vimball-scan
+
+USAGE
+=======================
 ### To install a vim package
 
 first thing, we need to translate meta file (VIMMETA) into Makefile. just type:
@@ -61,8 +99,6 @@ you need to specify script\_id in your meta file ( VIMMETA or META ).
 
 then run vim-packager build to get your Makefile. then type command below to
 upload your distribution:
-
-    $ make dist
 
     $ make upload
 
@@ -220,88 +256,6 @@ your should update your package information in VIMMETA file
 
     $ make install
 
-VIMSCRIPT DOCUMENT FORMAT
-=========================
-
-BASIC REQUIREMENT
------------------
-
-    "=NAME your name
-    "
-    "=AUTHOR Cornelius
-    "
-    "=AUTHORS
-    "   Kana
-    "   Cornelius 
-    "
-    "=VERSION 0.2
-    "
-    "=DESCRIPTION
-    "
-    "   stories....
-    "   more ...
-    "
-    "=LICENSE MIT
-    "
-    "=REPOSITORY http://github.com/c9s/p5-vim-packager
-    "
-    "=REVISION r4356
-    "
-    "=REVISION da743bd63d7afa1cc8e054615c0208c1a871b0e2
-
-VARIABLE DOC FORMAT
-----------------------
-
-    "=[scope]:Var
-
-    "=g:Var
-    "
-    "  g:somehting
-    "       variable description
-    "  g:options   
-    "       variable description
-    "       line2
-    "  g:options
-    "
-    "==
-
-    "=s:Var 
-    "
-    "  s:somehting
-    "       variable description
-    "  s:options   
-    "       variable description
-    "       line2
-    "  s:options
-    "
-    "==
-
-FUNCTION DOC FORMAT
--------------------
-
-    "=FUNC
-    "=FUNCTION
-    " function_name :
-    "   list@hash :
-    "       description
-    "
-    "   name@string :
-    "       description
-    "   
-    "   @return: 
-    "==
-
-COMMANDS DOC FORMAT
---------------------
-
-    "=COMMANDS
-    "   
-    "    :ReloadCPAN
-    "         description
-    "
-    "    :AutoComplPopEnable
-    "
-    "==
 
 INSTALLATION
 =========================

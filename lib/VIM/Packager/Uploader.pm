@@ -7,8 +7,22 @@ use Exporter::Lite;
 our @EXPORT_OK=qw(upload);
 
 
+sub edit_release_note {
+    my $bin = $ENV{SVN_EDITOR} || $ENV{EDITOR} || 'vim';
+    use File::Temp qw'tempfile';
+    my ($fh, $filename) = tempfile();
+    print $fh "\n\n\n\n(This package is released by VIM::Packager http://github.com/c9s/vim-packager)";
+    close $fh;
+
+    print "Launching Editor: $bin\n";
+    system("$bin $filename");
+    print "Done\n";
+    return $filename;
+}
+
 # XXX: currently is for vim.org
 sub upload {
+    $|++;
     my $file           = shift @ARGV;
     my $vim_version    = shift @ARGV;
     my $script_version = shift @ARGV;
@@ -25,20 +39,18 @@ sub upload {
     my $uploader = VIM::Uploader->new();
     $uploader->login();
 
-    my @lines;
-    print "Please enter your release note below (double empty line to finish):\n";
-    while( <STDIN> ) {
-        chomp ;
-        last unless $_ or $lines[ $#lines ];
-        push @lines , $_;
-    }
+    my $filename = edit_release_note();
+    local $/;
+    open FH , '<' , $filename;
+    my $comment = <FH>;
+    close FH;
 
     my $ok = $uploader->upload( 
         script_id => $script_id ,
         script_file => $file ,
         vim_version => $vim_version,  
         script_version => $script_version,
-        version_comment => join("\n",@lines)
+        version_comment => $comment,
     );
 
     print "DONE" if $ok;

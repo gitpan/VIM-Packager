@@ -14,7 +14,14 @@ use Carp;
 use FileHandle;
 
 our @EXPORT = ();
-our @EXPORT_OK = qw(install_deps install install_deps_remote install_deps_from_git uninstall);
+our @EXPORT_OK = qw(
+        install_deps 
+        install 
+        install_deps_remote 
+        install_deps_from_git 
+        uninstall
+        bump_version
+        );
 
 
 # FIXME:  install deps from vim script archive network.
@@ -346,5 +353,52 @@ sub uninstall {
     unlink $f;
 }
 
+
+=head2 bump_version
+
+you can export VIMPACKAGE_AUTO_COMMIT to do auto commit after version bumpped.
+
+    export VIMPACKAGE_AUTO_COMMIT=1
+
+=cut
+
+sub bump_version {
+    my $meta = VIM::Packager::MetaReader->new->read_metafile();
+    my $previous_ver = $meta->{version};
+    my $version = $previous_ver + 0.1;
+
+
+    my $file = $meta->{version_from};
+    if( -e $file ) {
+        open FH , "<" , $file;
+        my @lines = <FH>;
+        close FH;
+
+        my $found;
+        for ( @lines ) {
+            if( /^"=?\s*Version:?\s+$previous_ver/i ) {
+                $found++;
+                print "Version tag found: $_";
+                $_ = qq{" Version: $version\n};
+            }
+        }
+
+        open FH , ">" , $file;
+        print FH @lines;
+        close FH;
+
+        if( $ENV{VIMPACKAGE_AUTO_COMMIT} and -e '.git' and $found ) {
+            # found git repository
+            print "Found .git directory\n";
+            print "Do auto-commit\n";
+            my $git = qx{which git};
+            chomp $git;
+            qx{$git commit $file -m"Bump version to $version."};
+        }
+
+        print "Version bumped to $version\n";
+        print "Done.\n";
+    }
+}
 
 1;

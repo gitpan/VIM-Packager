@@ -23,3 +23,5 @@
 * support unit testing (unit-test.vim)
 * uninstall package
 * fix installer copy method.
+* version bump script
+* change log helper

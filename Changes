@@ -2,6 +2,7 @@
 
 Revision history for VIM-Packager
 
+2009.32306 -- 三 11/25 00:48:54 2009
 
 0.03    四 10/29 02:48:56 2009 
         * support uninstall,install-deps, link features
