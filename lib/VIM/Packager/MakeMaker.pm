@@ -140,13 +140,14 @@ sub new {
     $self->section_link( $main , $filelist );
 
     # -----------
-
     new_section $main => 'manifest';
+    add_st $main => q|$(NOECHO) $(ECHO) ".git" > MANIFEST.SKIP|;
+    add_st $main => q|$(NOECHO) $(ECHO) ".svn" >> MANIFEST.SKIP|;
+    add_st $main => q|$(NOECHO) $(ECHO) ".*.tar.gz" >> MANIFEST.SKIP|;
     add_st $main => q|$(FULLPERL) $(PERLFLAGS) -MVIM::Packager::Manifest=mkmanifest -e 'mkmanifest'|;
-    add_st $main => q|$(NOECHO) $(TOUCH) MANIFEST.SKIP|;
 
-    new_section $main => 'dist';
-    add_st $main => q|$(TAR) $(TARFLAGS) $(DISTNAME).tar.gz $(TO_INST_VIMS) $(META_FILE) $(README)|;
+    new_section $main => 'dist' , qw(manifest);
+    add_st $main => q|$(TAR) $(TARFLAGS) $(DISTNAME).tar.gz $(TO_INST_VIMS) $(META_FILE) $(README) `cat MANIFEST`|;
 	add_noop_st $main;
 
     new_section $main => 'help';
@@ -366,7 +367,6 @@ END
     print "DONE\n";
 }
 
-
 sub meta_section {
     my $self = shift;
     my $meta = shift;
@@ -466,6 +466,10 @@ sub file_section {
     return @section;
 }
 
+=head2 get_installed_pkgs
+
+=cut
+
 sub get_installed_pkgs {
     my ($self, $dir ) = @_;
 
@@ -488,6 +492,14 @@ sub get_installed_pkgs {
     File::Find::find( \&$closure ,$dir );
     return @pkg_record_files;
 }
+
+
+
+=head2 check_dependency
+
+pass meta object and check dependency.
+
+=cut
 
 sub check_dependency {
     my $self = shift;
@@ -567,6 +579,12 @@ sub check_dependency {
 
 
 
+
+=head2 init_vim_dir_macro
+
+init vim dir macro
+
+=cut
 
 sub init_vim_dir_macro {
     my $self = shift;

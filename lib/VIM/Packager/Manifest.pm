@@ -125,8 +125,8 @@ sub mkmanifest {
     my $found = manifind();
     my($key,$val,$file,%all);
     %all = (%$found, %$read);
-    $all{$MANIFEST} = ($Is_VMS_mode ? "$MANIFEST\t\t" : '') .
-                     'This list of files'
+
+    $all{$MANIFEST} = ($Is_VMS_mode ? "$MANIFEST\t\t" : '') 
         if $manimiss; # add new MANIFEST to known file list
     foreach $file (_sort keys %all) {
 	if ($skip->($file)) {

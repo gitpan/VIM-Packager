@@ -365,8 +365,7 @@ you can export VIMPACKAGE_AUTO_COMMIT to do auto commit after version bumpped.
 sub bump_version {
     my $meta = VIM::Packager::MetaReader->new->read_metafile();
     my $previous_ver = $meta->{version};
-    my $version = $previous_ver + 0.1;
-
+    my $version = $previous_ver + 0.01;
 
     my $file = $meta->{version_from};
     if( -e $file ) {
