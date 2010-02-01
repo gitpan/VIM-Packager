@@ -14,21 +14,23 @@ INSTALLATION
 
 there are 3 ways for you to install VIM::Packager
 
-1. Shipwright package, just a simple step:
+### via Makefile.PL:
 
-    $ curl http://www.oulixe.us/vim-packager-2009-11-25.bin | perl
-    $ export PATH=~/vim-packager/bin/:$PATH
-    # then you got vim-packager here
+        $ git clone git://github.com/c9s/vim-packager.git
+        $ cd vim-packager
+        $ perl Makefile.PL
+        $ sudo make             # you might need sudo if you have to install the dependencies.
+        $ sudo make install
 
-2. via Makefile.PL:
+### via CPAN:
 
-    $ perl Makefile.PL
-    $ sudo make             # you might need sudo if you have to install the dependencies.
-    $ sudo make install
+        $ sudo cpan VIM::Packager
 
-3. via CPAN:
+### Shipwright package, just a simple step:
 
-    $ sudo cpan VIM::Packager
+        $ curl http://www.oulixe.us/vim-packager-2009-11-25.bin | perl
+        $ export PATH=~/vim-packager/bin/:$PATH
+        # then you got vim-packager here
 
 VIM::Packager ABSTRACT
 =======================

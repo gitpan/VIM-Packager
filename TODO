@@ -25,3 +25,5 @@
 * fix installer copy method.
 * version bump script
 * change log helper
+* libpath property
+    XXX: should use . by default if vimlib direcotry and libpath are not found

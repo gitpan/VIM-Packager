@@ -18,9 +18,10 @@ my  $VERBOSE = 1;
 =head1 SYNOPSIS
 
     $ vim-packager build 
-    $ make 
+    $ make -f Makefile.vimp
+
         # auto install dependency 
-    $ make install
+    $ make install -f Makefile.vimp
 
 =head1 Constants
 
@@ -121,7 +122,7 @@ sub new {
 
     push @$main, q|.PHONY: all install clean uninstall help upload link|;
     
-    my $filelist = $self->make_filelist( LIBPATH );
+    my $filelist = $self->make_filelist( $meta->{libpath} || LIBPATH );
 
     $makefile->{filelist} = $filelist;
 
@@ -139,7 +140,6 @@ sub new {
     $self->section_deps( $main );
     $self->section_link( $main , $filelist );
 
-    # -----------
     new_section $main => 'manifest';
     add_st $main => q|$(NOECHO) $(ECHO) ".git" > MANIFEST.SKIP|;
     add_st $main => q|$(NOECHO) $(ECHO) ".svn" >> MANIFEST.SKIP|;
@@ -172,7 +172,7 @@ sub new {
     new_section $main => 'bump';
     add_st $main => q|$(NOECHO) $(FULLPERL) $(PERLFLAGS) -MVIM::Packager::Installer=bump_version -e 'bump_version()' |;
     add_st $main => q|sh -c 'vim-packager build'|;  # rebuild
-    add_st $main => q|sh -c 'make upload'|;
+    add_st $main => q|sh -c 'make upload -f Makefile.vimp'|;
 
     new_section $main => 'release' , qw(bump);
     add_noop_st $main;
@@ -341,9 +341,9 @@ sub generate_makefile {
     my $sections = shift;
     
 
-    print "Write to Makefile.\n";
+    print "Write to Makefile.vimp\n";
 
-    open my $fh , ">" , 'Makefile';
+    open my $fh , ">" , 'Makefile.vimp';
     print $fh <<'END';
 # VIM::Packager::MakeMaker
 #
@@ -442,7 +442,7 @@ sub file_section {
 
     my @to_install = keys %$filelist;
 
-    add_macro \@section , VIMLIB => LIBPATH;
+    add_macro \@section , VIMLIB => $meta->{libpath} || LIBPATH;
 
     add_macro \@section , VIMMETA => VIM::Packager::MetaReader::find_meta_file();
 
@@ -577,8 +577,7 @@ sub check_dependency {
     };
 }
 
-
-
+sub possible_runtime_dir { qw(autoload after syntax ftplugin ftdetect compiler plugin macros colors doc) }
 
 =head2 init_vim_dir_macro
 
@@ -592,7 +591,7 @@ sub init_vim_dir_macro {
     $dir_configs{ VIM_BASEDIR } = $ENV{VIM_BASEDIR} || vim_rtp_home();
     $dir_configs{ VIM_AFTERBASE_DIR} = $ENV{VIM_AFTERBASE_DIR}  || File::Spec->join( $dir_configs{VIM_BASEDIR} , 'after' );
 
-    for my $sub ( qw(after syntax ftplugin compiler plugin macros colors) ) {
+    for my $sub ( possible_runtime_dir() ) {
         my $path_name = 'VIM_' . uc($sub) . '_DIR';
         my $after_path_name = 'VIM_AFTER_' . uc($sub) . '_DIR';
         $dir_configs{$path_name} = $ENV{$path_name}
@@ -626,11 +625,18 @@ sub make_filelist {
 
     # my $prefix = File::Spec->join($ENV{HOME} , '.vim');
     my $prefix = '$(VIM_BASEDIR)';
+
+    my @search_dir = ( ( $base_prefix eq '.' or $base_prefix eq './' ) 
+                ?  possible_runtime_dir()
+                :  $base_prefix );
+    
+
     File::Find::find( sub {
         return unless -f $_;
         return if /\#/;
         return if /~$/;             # emacs temp files
         return if /,v$/;            # RCS files
+        return if /\.(git|svn)/;          # skip .git
         return if m{\.swp$};        # vim swap files
 
         my $src = File::Spec->catfile( $File::Find::dir , $_ );
@@ -640,7 +646,8 @@ sub make_filelist {
         $target = File::Spec->catfile( $prefix , $target );
 
         $install{ $src } = $target;
-    } , $base_prefix );
+        print "Added $src to file list\n";
+    } , grep { -e $_ } @search_dir );
     return \%install;
 }
 

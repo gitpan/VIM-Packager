@@ -18,15 +18,9 @@ requires(
     'Getopt::Long'                => 2.38,
     'LWP::UserAgent'              => 0,
     'YAML'                        => 0.70,
+    'VIM::Uploader'               => '0',
+    'Algorithm::Diff'             => '0',
 );
-
-feature 'Upload vim script dist to vim.org' =>
-    -default => 1,
-    recommends('VIM::Uploader' => '0');
-
-feature 'Diff with remote downloaded script' => 
-    -default => 1,
-    recommends('Algorithm::Diff' => '0');
 
 build_requires 'Test::More';
 

@@ -47,6 +47,8 @@ sub trim {
         cpan.vim > 0
             git://github.com/c9s/cpan.vim.git  # install from git repository
 
+    =libpath .
+
     =script
 
         bin/parser
@@ -55,10 +57,6 @@ sub trim {
     =repository git://....../
 
 =head1 Description
-
-
-
-
 
 =head1 Constant
 
@@ -221,6 +219,11 @@ sub __abstract {
 sub __type {
     my ($self,$value) = @_;
     $self->meta->{type} =$value;
+}
+
+sub __libpath {
+    my ($self,$value) = @_;
+    $self->meta->{libpath} =$value;
 }
 
 sub __version_from {

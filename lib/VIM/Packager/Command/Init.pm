@@ -28,7 +28,7 @@ or just skip author name and email option if you have L</Autho Info File>
             --type=plugin \
 
             # optional 
-            --no-dirs
+            --dirs
             --dirs=basic
             --dirs=full 
             --dirs=auto  # default
@@ -52,7 +52,7 @@ the plugin name will be C<your-plugin.vim>
 
 =item --email=[email]  | -e
 
-=item --no-migration | -nm
+=item --migrate | -m
 
 =back
 
@@ -71,13 +71,11 @@ sub options {
     (
         'n|name=s'        => 'name',
         'v|verbose'       => 'verbose',
-        'nm|no-migration' => 'no_migration',
+        'm|migration'     => 'migration',
         't|type=s'        => 'type',
         'a|author=s'      => 'author',
         'e|email=s'       => 'email',
-
-        'no_dirs'         => 'no_dirs',
-        'dirs=s'          => 'dirs',
+        'd|dirs=s'          => 'dirs',
     );
 }
 
@@ -118,7 +116,7 @@ sub run {
     }
 
     # migrate dirs
-    unless( $self->{no_migration} ) {
+    if( $self->{migrate} ) {
         File::Path::mkpath [ 'vimlib' ];
         my @known_dir_names = qw(autoload indent syntax colors doc plugin ftplugin after ftdetect);
         for ( @known_dir_names ) {
@@ -129,10 +127,11 @@ sub run {
         }
     }
 
-    $self->create_dir_skeleton();
+    $self->create_dir_skeleton() if $self->{dirs};
 
     # if we have doc directory , create a basic doc skeleton
-    $self->create_doc_skeleton() if( -e File::Spec->join('vimlib' , 'doc') );
+    $self->create_doc_skeleton() 
+        if -e File::Spec->join('vimlib' , 'doc') ;
 
     # create meta file skeleton
     $self->create_meta_skeleton( );
@@ -246,10 +245,6 @@ END
 sub create_dir_skeleton {
     my $self = shift;
     say "Creating directories.";
-
-    return if $self->{no_dirs};
-
-    $self->{dirs} ||= 'auto';
     if( $self->{dirs} eq 'basic' ) {
         File::Path::mkpath [
             map { File::Spec->join( 'vimlib' , $_ ) }  qw(autoload syntax plugin ftplugin ftdetect doc)
