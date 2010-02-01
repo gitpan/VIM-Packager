@@ -314,9 +314,19 @@ sub install {
         }
     }
 
-
     my @files = values %install_to;
-    VIM::Packager::Record::save( $pkgname , $meta , \@files );
+
+    print STDERR "Making checksum...\n";
+    my @e = Vimana::Record->mk_file_digests( @files );
+    use Vimana::Record;
+    Vimana::Record->add( {
+            version => 0.2,    # record spec version
+            generated_by => 'VIM-Packager' . $Vimana::VERSION,
+            install_type => 'meta',    # auto , make , rake ... etc
+            package => $pkgname,
+            files => \@e,
+            meta => $meta,
+    } );
 
     print "Updating doc tags\n";
     system(qq|vim -c ':helptags \$VIMRUNTIME/doc'  -c q |);

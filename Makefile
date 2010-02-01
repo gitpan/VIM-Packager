@@ -19,8 +19,8 @@
 #     NAME => q[VIM::Packager]
 #     NO_META => q[1]
 #     PL_FILES => {  }
-#     PREREQ_PM => { File::Copy=>q[0], Getopt::Long=>q[2.38], DateTime::Format::DateParse=>q[0.04], YAML=>q[0.7], Exporter::Lite=>q[0.02], ExtUtils::MakeMaker=>q[6.42], File::Spec=>q[3.3], App::CLI=>q[0.08], VIM::Uploader=>q[0], Test::More=>q[0], LWP::UserAgent=>q[0], File::Find=>q[1.14], File::Temp=>q[0], File::Path=>q[2.07], File::Basename=>q[0], Algorithm::Diff=>q[0] }
-#     VERSION => q[2010.03217]
+#     PREREQ_PM => { DateTime::Format::DateParse=>q[0.04], YAML=>q[0.7], File::Spec=>q[3.3], VIM::Uploader=>q[0], File::Find=>q[1.14], File::Path=>q[2.07], Algorithm::Diff=>q[0], Getopt::Long=>q[2.38], File::Copy=>q[0], Exporter::Lite=>q[0.02], ExtUtils::MakeMaker=>q[6.42], App::CLI=>q[0.08], Test::More=>q[0], LWP::UserAgent=>q[0], Vimana=>q[0], File::Temp=>q[0], File::Basename=>q[0] }
+#     VERSION => q[2010.03218]
 #     dist => { PREOP=>q[$(PERL) -I. "-MModule::Install::Admin" -e "dist_preop(q($(DISTVNAME)))"] }
 #     realclean => { FILES=>q[MYMETA.yml] }
 #     test => { TESTS=>q[t/00-installed-record.t t/00-load.t t/00-meta.t t/boilerplate.t t/git-install.t t/git.t t/pod-coverage.t t/pod.t] }
@@ -62,11 +62,11 @@ DIRFILESEP = /
 DFSEP = $(DIRFILESEP)
 NAME = VIM::Packager
 NAME_SYM = VIM_Packager
-VERSION = 2010.03217
+VERSION = 2010.03218
 VERSION_MACRO = VERSION
-VERSION_SYM = 2010_03217
+VERSION_SYM = 2010_03218
 DEFINE_VERSION = -D$(VERSION_MACRO)=\"$(VERSION)\"
-XS_VERSION = 2010.03217
+XS_VERSION = 2010.03218
 XS_VERSION_MACRO = XS_VERSION
 XS_DEFINE_VERSION = -D$(XS_VERSION_MACRO)=\"$(XS_VERSION)\"
 INST_ARCHLIB = blib/arch
@@ -314,7 +314,7 @@ RCS_LABEL = rcs -Nv$(VERSION_SYM): -q
 DIST_CP = best
 DIST_DEFAULT = tardist
 DISTNAME = VIM-Packager
-DISTVNAME = VIM-Packager-2010.03217
+DISTVNAME = VIM-Packager-2010.03218
 
 
 # --- MakeMaker macro section:
@@ -859,7 +859,7 @@ testdb_static :: testdb_dynamic
 # --- MakeMaker ppd section:
 # Creates a PPD (Perl Package Description) for a binary distribution.
 ppd :
-	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="2010.03217">' > $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="2010.03218">' > $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <ABSTRACT></ABSTRACT>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <AUTHOR>Cornelius &lt;cornelius.howl@gmail.com&gt;</AUTHOR>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <IMPLEMENTATION>' >> $(DISTNAME).ppd
@@ -878,6 +878,7 @@ ppd :
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="LWP::UserAgent" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Test::More" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="VIM::Uploader" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Vimana::" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="YAML::" VERSION="0.7" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <ARCHITECTURE NAME="darwin-2level-5.10" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <CODEBASE HREF="" />' >> $(DISTNAME).ppd

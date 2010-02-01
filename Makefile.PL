@@ -20,6 +20,7 @@ requires(
     'YAML'                        => 0.70,
     'VIM::Uploader'               => '0',
     'Algorithm::Diff'             => '0',
+    'Vimana' => 0,
 );
 
 build_requires 'Test::More';
